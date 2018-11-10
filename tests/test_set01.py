@@ -1,10 +1,11 @@
 import unittest
 from cryptopals import set01
 
-def _ascii_to_hex(string):
-    return ''.join([format(ord(c), "x") for c in string])
-
 class Base64Tests(unittest.TestCase):
+    @staticmethod
+    def _ascii_to_hex(string):
+        return ''.join([format(ord(c), "x") for c in string])
+
     def test_empty(self):
         self.assertEqual(set01.hex_to_base64(""), "")
 
@@ -17,7 +18,7 @@ class Base64Tests(unittest.TestCase):
         for i in range(len(input_str)):
             with self.subTest(i=i):
                 input_substr = input_str[0:i+1]
-                hex_str = _ascii_to_hex(input_substr)
+                hex_str = self._ascii_to_hex(input_substr)
                 base64_str = set01.hex_to_base64(hex_str)
                 self.assertEqual(base64_str, expected_outputs[i])
 
