@@ -1,24 +1,20 @@
 import operator
 
-def hex_to_base64(hex_str):
+def hex_to_base64(hex_bytes):
     _BASE64_TABLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-
-    if len(hex_str) % 2 != 0:
-        print("invalid string length, must be divisible by two")
-        return
 
     base64_str = ""
 
-    for i in range(0, len(hex_str), 6):
-        substr = hex_str[i:i+6]
+    for i in range(0, len(hex_bytes), 3):
+        substr = hex_bytes[i:i+3]
         mask = 0xfc0000 
         shift = 3
 
         num_pad_bytes = 0
-        if (len(substr) < 6):
-            num_pad_bytes = 3 - len(substr) // 2
+        if (len(substr) < 3):
+            num_pad_bytes = 3 - len(substr)
 
-        substr_int_value = int(substr, 16)
+        substr_int_value = int.from_bytes(substr, byteorder='big')
         substr_int_value <<= (8 * num_pad_bytes)
 
         for i in range(shift, num_pad_bytes-1, -1):
