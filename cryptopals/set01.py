@@ -31,10 +31,13 @@ def hex_to_base64(hex_bytes):
 
 def fixed_xor(bytes1, bytes2):
     if len(bytes1) != len(bytes2):
-        print("strings have enequal length")
+        print("strings have unequal length")
         return bytearray()
 
     return bytearray(map(operator.xor, bytes1, bytes2))
+
+def repeating_key_xor(bytes1, key):
+    return bytes([char ^ key[i % len(key)] for (i, char) in enumerate(bytes1)])
 
 def score_text(text_bytes):
     # from http://pi.math.cornell.edu/~mec/2003-2004/cryptography/subs/frequencies.html

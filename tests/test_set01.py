@@ -41,6 +41,13 @@ class FixedXorTests(unittest.TestCase):
         expected_output = bytes.fromhex('746865206b696420646f6e277420706c6179')
         self.assertEqual(set01.fixed_xor(input1, input2), expected_output)
 
+class RepeatingKeyXorTests(unittest.TestCase):
+    def test_cryptopals(self):
+        input = (b"Burning 'em, if you ain't quick and nimble\n"
+                 b"I go crazy when I hear a cymbal")
+        output = bytes.fromhex('0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f')
+        self.assertEqual(set01.repeating_key_xor(input, b'ICE'), output)
+
 class TextScoringTests(unittest.TestCase):
     _SCORE_BY_CHAR = {
         ord(' '): 18.00,
