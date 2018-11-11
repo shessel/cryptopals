@@ -2,10 +2,6 @@ import unittest
 from cryptopals import set01
 
 class Base64Tests(unittest.TestCase):
-    @staticmethod
-    def _ascii_to_hex(string):
-        return ''.join([format(ord(c), 'x') for c in string])
-
     def test_empty(self):
         self.assertEqual(set01.hex_to_base64(b''), '')
 
@@ -44,3 +40,94 @@ class FixedXorTests(unittest.TestCase):
         input2 = bytes.fromhex('686974207468652062756c6c277320657965')
         expected_output = bytes.fromhex('746865206b696420646f6e277420706c6179')
         self.assertEqual(set01.fixed_xor(input1, input2), expected_output)
+
+class TextScoringTests(unittest.TestCase):
+    _SCORE_BY_CHAR = {
+        ord(' '): 18.00,
+        ord('E'): 12.02,
+        ord('T'):  9.10,
+        ord('A'):  8.12,
+        ord('O'):  7.68,
+        ord('I'):  7.31,
+        ord('N'):  6.95,
+        ord('S'):  6.28,
+        ord('R'):  6.02,
+        ord('H'):  5.92,
+        ord('D'):  4.32,
+        ord('L'):  3.98,
+        ord('U'):  2.88,
+        ord('C'):  2.71,
+        ord('M'):  2.61,
+        ord('F'):  2.30,
+        ord('Y'):  2.11,
+        ord('W'):  2.09,
+        ord('G'):  2.03,
+        ord('P'):  1.82,
+        ord('B'):  1.49,
+        ord(','):  1.11,
+        ord('.'):  1.11,
+        ord('V'):  1.11,
+        ord('K'):  0.69,
+        ord('-'):  0.17,
+        ord('_'):  0.17,
+        ord('"'):  0.17,
+        ord("'"):  0.17,
+        ord('X'):  0.17,
+        ord('('):  0.11,
+        ord(')'):  0.11,
+        ord(';'):  0.11,
+        ord('0'):  0.11,
+        ord('1'):  0.11,
+        ord('Q'):  0.11,
+        ord('2'):  0.10,
+        ord(':'):  0.10,
+        ord('J'):  0.10,
+        ord('Z'):  0.07,
+        ord('/'):  0.03,
+        ord('*'):  0.03,
+        ord('!'):  0.03,
+        ord('?'):  0.03,
+        ord('$'):  0.03,
+        ord('3'):  0.03,
+        ord('5'):  0.03,
+        ord('>'):  0.03,
+        ord('{'):  0.03,
+        ord('}'):  0.03,
+        ord('4'):  0.03,
+        ord('9'):  0.03,
+        ord('['):  0.03,
+        ord(']'):  0.03,
+        ord('8'):  0.03,
+        ord('6'):  0.03,
+        ord('7'):  0.03,
+        ord('\\'): 0.03,
+        ord('+'):  0.03,
+        ord('|'):  0.03,
+        ord('&'):  0.03,
+        ord('<'):  0.03,
+        ord('%'):  0.03,
+        ord('@'):  0.03,
+        ord('#'):  0.03,
+        ord('^'):  0.03,
+        ord('`'):  0.03,
+        ord('~'):  0.03,
+    }
+
+    def test_score_empty(self):
+        self.assertEqual(set01.score_text(b''), 0.0)
+
+    def test_score_non_printable_lower(self):
+        self.assertEqual(set01.score_text(bytes([i for i in range(32)])), 0.0)
+
+    def test_score_non_printable_upper(self):
+        self.assertEqual(set01.score_text(bytes([i for i in range(127,256)])), 0.0)
+
+    def test_score_every_char(self):
+        self.assertEqual(set01.score_text(b' ETAOINSRHDLUCMFYWGPB,.VK-_"\'X();01Q2:JZ/*!?$35>{}49[]867\\+|&<%@#^`~'), sum(self._SCORE_BY_CHAR.values()))
+
+    def test_score_foobar(self):
+        self.assertAlmostEqual(set01.score_text(b'foobar'), sum([self._SCORE_BY_CHAR[c] for c in b'FOOBAR']))
+
+class BreakSingleByteXorTests(unittest.TestCase):
+    def test_cryptopals(self):
+        self.assertEqual(set01.break_single_byte_xor(bytes.fromhex('1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736')), b"Cooking MC's like a pound of bacon")
