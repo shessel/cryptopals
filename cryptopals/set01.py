@@ -1,5 +1,8 @@
-_BASE64_TABLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+import operator
+
 def hex_to_base64(hex_str):
+    _BASE64_TABLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+
     if len(hex_str) % 2 != 0:
         print("invalid string length, must be divisible by two")
         return
@@ -27,3 +30,10 @@ def hex_to_base64(hex_str):
         base64_str += '=' * num_pad_bytes
 
     return base64_str
+
+def fixed_xor(bytes1, bytes2):
+    if len(bytes1) != len(bytes2):
+        print("strings have enequal length")
+        return bytearray()
+
+    return bytearray(map(operator.xor, bytes1, bytes2))
