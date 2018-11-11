@@ -119,14 +119,26 @@ def score_text(text_bytes):
     return score
 
 def break_single_byte_xor(xored_bytes):
-    best_score = 0.0
-    best_i = 0
     best_text = ""
-    for i in range(256):
-        text_candidate = fixed_xor(xored_bytes, bytes([i]*len(xored_bytes)))
+    best_xor_byte = 0
+    best_score = 0.0
+    for xor_byte in range(256):
+        text_candidate = fixed_xor(xored_bytes, bytes([xor_byte]*len(xored_bytes)))
         candidate_score = score_text(text_candidate) 
         if candidate_score > best_score:
-            best_score = candidate_score
-            best_i = i
             best_text = text_candidate
-    return best_text
+            best_xor_byte = xor_byte
+            best_score = candidate_score
+    return best_text, best_xor_byte, best_score
+
+def find_single_byte_xor(candidate_inputs):
+    best_score = 0.0
+    best_text = ""
+    best_i = 0
+    for i, candidate_input in enumerate(candidate_inputs):
+        candidate_text, _xor_byte, candidate_score = break_single_byte_xor(candidate_input)
+        if candidate_score > best_score:
+            best_score = candidate_score
+            best_text = candidate_text
+            best_i = i
+    return best_text, best_i

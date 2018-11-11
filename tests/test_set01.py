@@ -129,5 +129,48 @@ class TextScoringTests(unittest.TestCase):
         self.assertAlmostEqual(set01.score_text(b'foobar'), sum([self._SCORE_BY_CHAR[c] for c in b'FOOBAR']))
 
 class BreakSingleByteXorTests(unittest.TestCase):
+    def test_foobar(self):
+        input_bytes = b'foobar foobar foobar foobar'
+        xored_bytes = set01.fixed_xor(input_bytes, bytes([123] * len(input_bytes)))
+        best_text, xor_byte, _score = set01.break_single_byte_xor(xored_bytes)
+        self.assertEqual(best_text, b'foobar foobar foobar foobar')
+        self.assertEqual(xor_byte, 123)
+
     def test_cryptopals(self):
-        self.assertEqual(set01.break_single_byte_xor(bytes.fromhex('1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736')), b"Cooking MC's like a pound of bacon")
+        input_bytes = bytes.fromhex('1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736')
+        best_text, _xor_byte, _score = set01.break_single_byte_xor(input_bytes)
+        self.assertEqual(best_text, b"Cooking MC's like a pound of bacon")
+
+class FindSingleByteXorTests(unittest.TestCase):
+    def test_foobar(self):
+        input_bytes = b'foobar foobar foobar foobar'
+        xored_bytes = set01.fixed_xor(input_bytes, bytes([123] * len(input_bytes)))
+        # rest is random hex bytes
+        candidate_inputs = [
+            bytes.fromhex('977dd32697ea9c91a11dbcac7c14443d442b21a59139e7447625b0'),
+            bytes.fromhex('e78ec6dfb1c088c07ca4b739a2b584eebce4965c998508b304123b'),
+            bytes.fromhex('bc8f6af1121680540926442b3a0947daaed972fe7e82c97e186bcf'),
+            bytes.fromhex('82bec6bddc69afd5171426e6c11b558438b0e3a0eed060f3c6baf2'),
+            xored_bytes,
+            bytes.fromhex('9c9735c58952e04944307fa70e4b341719a8c4e5ac0aeb17b6ca25'),
+            bytes.fromhex('6c4829e24230a1d1353f896bda57fab4ba20ff9ff5520d75f4d465'),
+            bytes.fromhex('e81dd9e29471f5d1f3f78f8b589dc51ecf33bb5cf27118aec42f97'),
+            bytes.fromhex('3019db123fa1281f4027720e9b4be526cb5902f2da5a6ce3d1df48'),
+            bytes.fromhex('a7e458b2b0d831a0fd83b7ccdc30750586b2418a2a534be93f7fd4'),
+            bytes.fromhex('b659b90920cb29f962532ae31edbe2bccd6d470f38b65017852eae'),
+            bytes.fromhex('58452865ba441420ea043b6886123bd9f2c946fb058609e72b47b9'),
+        ]
+        best_text, best_i = set01.find_single_byte_xor(candidate_inputs)
+        print(best_i)
+        self.assertEqual(best_text, b'foobar foobar foobar foobar')
+        self.assertEqual(best_i, 4)
+
+    @unittest.skip("takes a while and is only for challenge")
+    def test_cryptopals(self):
+        with open('input/detect-single-byte-xor.txt') as file:
+            candidate_inputs = [
+                bytes.fromhex(line.strip()) for line in file 
+            ]
+        best_text, best_i = set01.find_single_byte_xor(candidate_inputs)
+        self.assertEqual(best_text, b'Now that the party is jumping\n')
+        self.assertEqual(best_i, 170)
