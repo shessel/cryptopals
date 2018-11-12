@@ -145,3 +145,13 @@ def find_single_byte_xor(candidate_inputs):
             best_text = candidate_text
             best_i = i
     return best_text, best_i
+
+def edit_distance(bytes1, bytes2):
+    distance = 0
+    for xored_byte in fixed_xor(bytes1, bytes2):
+        num_bits = 0
+        while xored_byte > 0:
+            xored_byte &= xored_byte-1
+            num_bits += 1
+        distance += num_bits
+    return distance

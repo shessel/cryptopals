@@ -181,3 +181,23 @@ class FindSingleByteXorTests(unittest.TestCase):
         best_text, best_i = set01.find_single_byte_xor(candidate_inputs)
         self.assertEqual(best_text, b'Now that the party is jumping\n')
         self.assertEqual(best_i, 170)
+
+class EditDistanceTests(unittest.TestCase):
+    def test_same(self):
+        self.assertEqual(set01.edit_distance(b'foobar', b'foobar'), 0)
+
+    def test_against_all_bits_set(self):
+        for i in range(32):
+            with self.subTest(i=i):
+                self.assertEqual(set01.edit_distance(bytes.fromhex('ffffffff'), (0xffffffff >> i).to_bytes(4, byteorder='big')), i)
+
+    def test_alternating_patterns(self):
+        with self.subTest(i=0):
+            self.assertEqual(set01.edit_distance(bytes([0x55]), bytes([0xaa])), 8)
+        with self.subTest(i=1):
+            self.assertEqual(set01.edit_distance(bytes([0x33]), bytes([0xcc])), 8)
+        with self.subTest(i=2):
+            self.assertEqual(set01.edit_distance(bytes([0x0f]), bytes([0xf0])), 8)
+
+    def test_cryptopals(self):
+        self.assertEqual(set01.edit_distance(b'this is a test', b'wokka wokka!!!'), 37)
