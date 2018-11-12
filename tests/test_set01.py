@@ -19,6 +19,24 @@ class Base64Tests(unittest.TestCase):
         expected_output = 'SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t'
         self.assertEqual(set01.hex_to_base64(input), expected_output)
 
+class Base64DecodeTests(unittest.TestCase):
+    def test_empty(self):
+        self.assertEqual(set01.base64_to_hex(b''), b'')
+
+    def test_foobar(self):
+        input_strs = [b'Zg==', b'Zm8=', b'Zm9v', b'Zm9vYg==', b'Zm9vYmE=', b'Zm9vYmFy']
+        expected_output = b'foobar'
+        for i in range(len(input_strs)):
+            with self.subTest(i=i):
+                output_substr = expected_output[0:i+1]
+                base64_str = set01.base64_to_hex(input_strs[i])
+                self.assertEqual(base64_str, output_substr)
+
+    def test_cryptopals(self):
+        input = b'SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t'
+        expected_output = bytes.fromhex('49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d')
+        self.assertEqual(set01.base64_to_hex(input), expected_output)
+
 class FixedXorTests(unittest.TestCase):
     def test_empty(self):
         self.assertEqual(set01.fixed_xor(b'',b''), b'')

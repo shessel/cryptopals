@@ -29,6 +29,27 @@ def hex_to_base64(hex_bytes):
 
     return base64_str
 
+def base64_to_hex(base64_bytes):
+    BASE64_TABLE = b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+    hex_bytes = bytearray()
+    print(hex_bytes, type(hex_bytes))
+    for i in range(0, len(base64_bytes), 4):
+        substr = base64_bytes[i:i+4]
+        is_last_group = len(base64_bytes) - i <= 4
+        num_pad_bytes = 0
+        if is_last_group:
+            substr = substr.rstrip(b'=')
+            num_pad_bytes = 4 - len(substr)
+        group_value = functools.reduce(lambda x, y: (x << 6) + BASE64_TABLE.index(y), substr, 0)
+        # number of = in substr equals number of pad bytes so len(substr) - 1 is always the
+        if is_last_group:
+            group_value <<= (6 * num_pad_bytes)
+        # number of actual data carrying bytes
+        for j in range(2, num_pad_bytes -1, -1):
+            mask = 0xff << (8 * j)
+            hex_bytes.append((group_value & mask) >> (8 * j))
+    return hex_bytes
+
 def fixed_xor(bytes1, bytes2):
     if len(bytes1) != len(bytes2):
         print("strings have unequal length")
