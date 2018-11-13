@@ -32,7 +32,6 @@ def hex_to_base64(hex_bytes):
 def base64_to_hex(base64_bytes):
     BASE64_TABLE = b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
     hex_bytes = bytearray()
-    print(hex_bytes, type(hex_bytes))
     for i in range(0, len(base64_bytes), 4):
         substr = base64_bytes[i:i+4]
         is_last_group = len(base64_bytes) - i <= 4
@@ -176,3 +175,34 @@ def edit_distance(bytes1, bytes2):
             num_bits += 1
         distance += num_bits
     return distance
+
+def score_xor_key_size(bytes, num_blocks_to_test=2, min_key_size=2, max_key_size=40):
+    key_scores = dict()
+    for key_size in range(min_key_size, max_key_size+1):
+        key_score = 0.0
+        max_blocks = len(bytes) // key_size
+        if max_blocks < 2:
+            break
+        num_distances_to_consider = min(max_blocks, num_blocks_to_test)-1
+        for block_i in range(num_distances_to_consider):
+            first_block = bytes[block_i*key_size:(block_i+1)*key_size]
+            second_block = bytes[(block_i+1)*key_size:(block_i+2)*key_size]
+            key_score += edit_distance(first_block, second_block)
+        key_scores[key_size] = key_score / (key_size * num_distances_to_consider)
+    return key_scores
+
+def read_base64_from_file(filename):
+    with open(filename, 'rb') as file:
+        return b''.join([line.strip() for line in file])
+
+def break_repeating_key_xor(bytes, max_key_sizes=1):
+    key_scores = score_xor_key_size(bytes, 10)
+    sorted_key_scores = sorted(key_scores.items(), key=lambda key_value: (key_value[1], key_value[0]))
+    for i in range(max_key_sizes):
+        key_size = sorted_key_scores[i][0]
+        key = bytearray()
+        for n in range(key_size):
+            nth_bytes = bytes[n::key_size]
+            _best_text, xor_byte, _best_score = break_single_byte_xor(nth_bytes)
+            key.append(xor_byte)
+    return key

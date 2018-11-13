@@ -186,7 +186,6 @@ class FindSingleByteXorTests(unittest.TestCase):
             bytes.fromhex('58452865ba441420ea043b6886123bd9f2c946fb058609e72b47b9'),
         ]
         best_text, best_i = set01.find_single_byte_xor(candidate_inputs)
-        print(best_i)
         self.assertEqual(best_text, b'foobar foobar foobar foobar')
         self.assertEqual(best_i, 4)
 
@@ -219,3 +218,16 @@ class EditDistanceTests(unittest.TestCase):
 
     def test_cryptopals(self):
         self.assertEqual(set01.edit_distance(b'this is a test', b'wokka wokka!!!'), 37)
+
+class BreakRepeatingKeyXorTests(unittest.TestCase):
+    def test_foobar(self):
+        input = b' '.join([b'Foo Ba Rfo, obarf Oob arfo. Oba rfoo? Barf OOBA R.F., oobar!']*4)
+        key = b'foobar!'
+        input_enc = set01.repeating_key_xor(input, key)
+        self.assertEqual(set01.break_repeating_key_xor(input_enc), key)
+
+    def test_cryptopals(self):
+        input_base64 = set01.read_base64_from_file('input/repeating-key-xor.txt')
+        input_bytes = set01.base64_to_hex(input_base64)
+        key = b'Terminator X: Bring the noise'
+        self.assertEqual(set01.break_repeating_key_xor(input_bytes), key)
