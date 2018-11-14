@@ -1,9 +1,10 @@
 import unittest
 from cryptopals import set01
+from Crypto.Cipher import AES
 
 class Base64Tests(unittest.TestCase):
     def test_empty(self):
-        self.assertEqual(set01.hex_to_base64(b''), '')
+        self.assertEqual(set01.bytes_to_base64(b''), '')
 
     def test_foobar(self):
         input_str = b'foobar'
@@ -11,17 +12,19 @@ class Base64Tests(unittest.TestCase):
         for i in range(len(input_str)):
             with self.subTest(i=i):
                 input_substr = input_str[0:i+1]
-                base64_str = set01.hex_to_base64(input_substr)
+                base64_str = set01.bytes_to_base64(input_substr)
                 self.assertEqual(base64_str, expected_outputs[i])
 
     def test_cryptopals(self):
-        input = bytes.fromhex('49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d')
+        input = bytes.fromhex('49276d206b696c6c696e6720796f7572'
+                              '20627261696e206c696b65206120706f'
+                              '69736f6e6f7573206d757368726f6f6d')
         expected_output = 'SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t'
-        self.assertEqual(set01.hex_to_base64(input), expected_output)
+        self.assertEqual(set01.bytes_to_base64(input), expected_output)
 
 class Base64DecodeTests(unittest.TestCase):
     def test_empty(self):
-        self.assertEqual(set01.base64_to_hex(b''), b'')
+        self.assertEqual(set01.base64_to_bytes(b''), b'')
 
     def test_foobar(self):
         input_strs = [b'Zg==', b'Zm8=', b'Zm9v', b'Zm9vYg==', b'Zm9vYmE=', b'Zm9vYmFy']
@@ -29,13 +32,15 @@ class Base64DecodeTests(unittest.TestCase):
         for i in range(len(input_strs)):
             with self.subTest(i=i):
                 output_substr = expected_output[0:i+1]
-                base64_str = set01.base64_to_hex(input_strs[i])
+                base64_str = set01.base64_to_bytes(input_strs[i])
                 self.assertEqual(base64_str, output_substr)
 
     def test_cryptopals(self):
         input = b'SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t'
-        expected_output = bytes.fromhex('49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d')
-        self.assertEqual(set01.base64_to_hex(input), expected_output)
+        expected_output = bytes.fromhex('49276d206b696c6c696e6720796f7572'
+                                        '20627261696e206c696b65206120706f'
+                                        '69736f6e6f7573206d757368726f6f6d')
+        self.assertEqual(set01.base64_to_bytes(input), expected_output)
 
 class FixedXorTests(unittest.TestCase):
     def test_empty(self):
@@ -63,7 +68,11 @@ class RepeatingKeyXorTests(unittest.TestCase):
     def test_cryptopals(self):
         input = (b"Burning 'em, if you ain't quick and nimble\n"
                  b"I go crazy when I hear a cymbal")
-        output = bytes.fromhex('0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f')
+        output = bytes.fromhex('0b3637272a2b2e63622c2e69692a2369'
+                               '3a2a3c6324202d623d63343c2a262263'
+                               '24272765272a282b2f20430a652e2c65'
+                               '2a3124333a653e2b2027630c692b2028'
+                               '3165286326302e27282f')
         self.assertEqual(set01.repeating_key_xor(input, b'ICE'), output)
 
 class TextScoringTests(unittest.TestCase):
@@ -228,6 +237,22 @@ class BreakRepeatingKeyXorTests(unittest.TestCase):
 
     def test_cryptopals(self):
         input_base64 = set01.read_base64_from_file('input/repeating-key-xor.txt')
-        input_bytes = set01.base64_to_hex(input_base64)
+        input_bytes = set01.base64_to_bytes(input_base64)
         key = b'Terminator X: Bring the noise'
         self.assertEqual(set01.break_repeating_key_xor(input_bytes), key)
+
+class DecryptAesEcb(unittest.TestCase):
+    def test_foobar(self):
+        text = b'foobarfoobarfoob'
+        key = b'foobarfoobarfoob'
+        input = AES.new(key, AES.MODE_ECB).encrypt(text)
+        self.assertEqual(set01.decrypt_aes_ecb(key, input), text)
+
+    def test_cryptopals(self):
+        key = b'YELLOW SUBMARINE'
+        base64_input = set01.read_base64_from_file('input/aes-ecb.txt')
+        input = bytes(set01.base64_to_bytes(base64_input))
+        output = set01.decrypt_aes_ecb(key, input)
+        with open('output/aes-ecb.txt', 'rb') as file:
+            expected_output = file.read()
+            self.assertEqual(output, expected_output)

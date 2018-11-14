@@ -1,14 +1,15 @@
 import operator
 import collections
 import functools
+from Crypto.Cipher import AES
 
-def hex_to_base64(hex_bytes):
+def bytes_to_base64(bytes):
     BASE64_TABLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
     base64_str = ""
 
-    for i in range(0, len(hex_bytes), 3):
-        substr = hex_bytes[i:i+3]
+    for i in range(0, len(bytes), 3):
+        substr = bytes[i:i+3]
         mask = 0xfc0000 
         shift = 3
 
@@ -29,9 +30,9 @@ def hex_to_base64(hex_bytes):
 
     return base64_str
 
-def base64_to_hex(base64_bytes):
+def base64_to_bytes(base64_bytes):
     BASE64_TABLE = b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-    hex_bytes = bytearray()
+    bytes = bytearray()
     for i in range(0, len(base64_bytes), 4):
         substr = base64_bytes[i:i+4]
         is_last_group = len(base64_bytes) - i <= 4
@@ -46,8 +47,8 @@ def base64_to_hex(base64_bytes):
         # number of actual data carrying bytes
         for j in range(2, num_pad_bytes -1, -1):
             mask = 0xff << (8 * j)
-            hex_bytes.append((group_value & mask) >> (8 * j))
-    return hex_bytes
+            bytes.append((group_value & mask) >> (8 * j))
+    return bytes
 
 def fixed_xor(bytes1, bytes2):
     if len(bytes1) != len(bytes2):
@@ -206,3 +207,6 @@ def break_repeating_key_xor(bytes, max_key_sizes=1):
             _best_text, xor_byte, _best_score = break_single_byte_xor(nth_bytes)
             key.append(xor_byte)
     return key
+
+def decrypt_aes_ecb(key, text):
+    return AES.new(key, AES.MODE_ECB).decrypt(text)
