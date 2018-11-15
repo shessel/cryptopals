@@ -1,6 +1,7 @@
 import unittest
 from cryptopals import set01
 from Crypto.Cipher import AES
+from Crypto import Random
 
 class Base64Tests(unittest.TestCase):
     def test_empty(self):
@@ -241,7 +242,7 @@ class BreakRepeatingKeyXorTests(unittest.TestCase):
         key = b'Terminator X: Bring the noise'
         self.assertEqual(set01.break_repeating_key_xor(input_bytes), key)
 
-class DecryptAesEcb(unittest.TestCase):
+class DecryptAesEcbTests(unittest.TestCase):
     def test_foobar(self):
         text = b'foobarfoobarfoob'
         key = b'foobarfoobarfoob'
@@ -256,3 +257,46 @@ class DecryptAesEcb(unittest.TestCase):
         with open('output/aes-ecb.txt', 'rb') as file:
             expected_output = file.read()
             self.assertEqual(output, expected_output)
+
+class FindDuplicateBlocksTests(unittest.TestCase):
+    def test_first_block_equals_last_block(self):
+        input = bytearray([i for i in range(256)])
+        input[240:256] = input[0:16]
+        self.assertEqual(set01.find_duplicate_blocks(input), (0, 240))
+
+    def test_success(self):
+        input = bytes([i%16 for i in range(256)])
+        self.assertEqual(set01.find_duplicate_blocks(input), (0, 16))
+
+    def test_failure(self):
+        input = bytes([i for i in range(256)])
+        for test_i in [2**i for i in range(8)]:
+            with self.subTest(i=test_i):
+                self.assertEqual(set01.find_duplicate_blocks(input, test_i), None)
+
+    def test_assert_block_size(self):
+        input = bytes([i for i in range(13)])
+        for test_i in range(12):
+            with self.subTest(i=test_i):
+                self.assertRaises(AssertionError)
+
+class DetectAesEcbTests(unittest.TestCase):
+    def test_cryptopals(self):
+        with open('input/detect-aes-ecb.txt') as file:
+            inputs = [bytes.fromhex(line.strip()) for line in file]
+        self.assertEqual(set01.detect_aes_ecb(inputs), [132])
+
+    def test_random_data(self):
+        gen = Random.new()
+        expected_indices = [2, 13, 42]
+        inputs = []
+        for i in range(63):
+            if i in expected_indices:
+                text = bytearray(gen.read(256))
+                text[240:256] = text[0:16]
+                key = gen.read(16)
+                inputs.append(AES.new(key, AES.MODE_ECB).encrypt(bytes(text)))
+            else:
+                inputs.append(gen.read(256))
+
+        self.assertEqual(set01.detect_aes_ecb(inputs), expected_indices)

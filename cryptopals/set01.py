@@ -210,3 +210,18 @@ def break_repeating_key_xor(bytes, max_key_sizes=1):
 
 def decrypt_aes_ecb(key, text):
     return AES.new(key, AES.MODE_ECB).decrypt(text)
+
+def find_duplicate_blocks(bytes, block_size=16):
+    assert (len(bytes) % block_size) == 0
+    for block_start in range(0, len(bytes) - block_size, block_size):
+        block = bytes[block_start:block_start+block_size]
+        for compare_start in range(block_start+block_size, len(bytes), block_size):
+            if block == bytes[compare_start:compare_start+block_size]:
+                return(block_start, compare_start)
+
+def detect_aes_ecb(candidates):
+    possible_aes_ecb = []
+    for i, candidate in enumerate(candidates):
+        if find_duplicate_blocks(candidate):
+            possible_aes_ecb.append(i)
+    return possible_aes_ecb
