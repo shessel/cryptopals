@@ -1,7 +1,9 @@
+from Crypto import Random
+from Crypto.Random import random
 from Crypto.Cipher import AES
 from cryptopals import set01
 
-def pkcs7_padding(input, block_size):
+def pkcs7_padding(input, block_size=16):
     num_blocks = len(input) // block_size
     last_block_size = len(input) - num_blocks * block_size
     num_pad_bytes = block_size - last_block_size
@@ -34,3 +36,26 @@ def decrypt_aes_cbc(key, encrypted_text, iv = bytes([0] * 16)):
         decrypted_text += xored_block
         xor_block = encrypted_block
     return decrypted_text
+
+def aes_encryption_oracle(input_bytes):
+    random_gen = Random.new()
+    random_key = random_gen.read(16)
+    num_pad_bytes_front = random.randint(5,10)
+    num_pad_bytes_back = random.randint(5,10)
+    padded_input = pkcs7_padding(
+        random_gen.read(num_pad_bytes_front) +
+        input_bytes +
+        random_gen.read(num_pad_bytes_back)
+    )
+    if random.randint(0, 1) == 0:
+        return encrypt_aes_ecb(random_key, padded_input), 'ecb'
+    else:
+        random_iv = random_gen.read(16)
+        return encrypt_aes_cbc(random_key, padded_input, random_iv), 'cbc'
+
+def detect_ecb_or_cbc(input_bytes):
+    is_ecb = len(set01.detect_aes_ecb([input_bytes])) > 0
+    if is_ecb:
+        return 'ecb'
+    else:
+        return 'cbc'

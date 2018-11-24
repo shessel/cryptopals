@@ -59,3 +59,9 @@ class AesCbcDecryptTests(unittest.TestCase):
         with open('output/decrypt-aes-cbc.txt', 'rb') as output_file:
             output_bytes = output_file.read()
         self.assertEqual(set02.decrypt_aes_cbc(b'YELLOW SUBMARINE', input_bytes), output_bytes)
+
+class AesDetectionOracleTests(unittest.TestCase):
+    def test_aes_encryption_oracle(self):
+        for i in range(32):
+            oracle_bytes, mode = set02.aes_encryption_oracle(b'f' * 48)
+            self.assertEqual(set02.detect_ecb_or_cbc(oracle_bytes), mode)
